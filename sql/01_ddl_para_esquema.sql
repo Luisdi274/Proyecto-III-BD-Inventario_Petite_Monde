@@ -130,4 +130,28 @@ CREATE TABLE detalle_ventas(
 
 );
 
+/*Ahora hacemos transferencias entre almacenes*/
+CREATE TABLE transferencias(
+    id_transferencia SERIAL PRIMARY KEY,
+    id_almacen_origen INT NOT NULL,
+    --sucursal que envia mercancia
+    id_almacen_destino INT NOT NULL,
+    --sucursal que recibe mercancia
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    --cantidad movida de mercancía
+    fecha_transferencia TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_responsable VARCHAR(100) NOT NULL DEFAULT CURRENT_USER,
+    --control de ciclo de vida de la logística
+    -- Ej: traslado de Cartago->San José
+    estado VARCHAR(30) NOT NULL DEFAULT 'COMPLETADA'
+        CHECK(estado IN('PENDIENTE','EN_TRANSITO','COMPLETADA','CANCELADA')),
+    CONSTRAINT fk_transferencia_origen FOREIGN KEY (id_almacen_origen) REFERENCES almacenes(id_almacen),
+
+    CONSTRAINT fk_transferencia_destino FOREIGN KEY (id_almacen_destino) REFERENCES almacenes(id_almacen),
+    
+    CONSTRAINT fk_transferencia_producto FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    --regla lógica: no se puede transferir mercancía de un almacén hacia sí mismo
+    CONSTRAINT revision_almacenes_distintos CHECK (id_almacen_origen <> id_almacen_destino)
+);
 
