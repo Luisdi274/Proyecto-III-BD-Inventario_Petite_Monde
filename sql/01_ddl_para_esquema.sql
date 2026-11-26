@@ -98,3 +98,36 @@ CREATE TABLE inventario_en_almacen(
 );
 
 
+CREATE TABLE ventas(
+    id_venta SERIAL PRIMARY KEY,  
+    --se refiera numero de factura
+    id_almacen INT NOT NULL,
+    -- para fk y saber en que sucursal se da la venta
+    fecha_venta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    --se refiere a cuando se dio la venta
+    usuario_registro VARCHAR(100) NOT NULL DEFAULT CURRENT_USER,
+    --auditoría de quien registró venta
+    total_venta NUMERIC(14,2) NOT NULL DEFAULT 0 CHECK (total_venta>=0),
+    CONSTRAINT fk_venta_almacen FOREIGN KEY (id_almacen) REFERENCES almacenes(id_almacen) ON UPDATE cascade on DELETE RESTRICT
+
+);
+
+CREATE TABLE detalle_ventas(
+    id_detalle SERIAL PRIMARY KEY,
+    id_venta INT NOT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad >0),
+    --no se pueden ventas de 0 o negativas
+    precio_unitario NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (total_venta>=0),
+    --ahora vamos a tener una columna calculada automáticamente para no tener inconsistencias
+
+    subtotal NUMERIC(14,2) GENERATED ALWAYS AS (cantidad*precio_unitario) STORED,
+
+    CONSTRAINT fk_detalle_de_venta FOREIGN KEY (id_venta)
+    REFERENCES ventas(id_venta) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT fk_detalle_producto FOREIGN KEY(id_producto) REFERENCES productos(id_producto) ON UPDATE CASCADE RESTRICT 
+
+);
+
+
