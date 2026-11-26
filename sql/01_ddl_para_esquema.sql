@@ -22,4 +22,79 @@ CREATE TABLE subcategorias(
     CONSTRAINT fk_subcategoria FOREIGN KEY(id_categoria) REFERENCES categoria(id_categoria) ON UPDATE CASCADE ON DELETE RESTRICT,
     --en caso de que se actualice el id del padre se hace en cascada, pero no se pueden borrar categorias que tengan hijos
     CONSTRAINT criterio_unicidad__nombre_subcategoria UNIQUE (id_categoria,nombre_categoria)
+    -- esta restriccion permite que una subcategoria se pueda repetir en distintas categorias, pero no en la misma. Por eso es fk compuesta
 );
+
+CREATE TABLE proveedores(
+    id_proveedor SERIAL PRIMARY KEY,
+    nombre_proveedor NOT NULL UNIQUE,
+    contacto_nombre VARCHAR(120) NOT NULL,
+    --es a la persona principal a la que se contacta para hablar con proveedor
+    telefono VARCHAR(35) NOT NULL,
+    --aqui por el contexto, vamos a imponer que es un unico telefono de contacto
+    --por eso mismo no se hace otra tabla, por no ser un atributo multivaluado
+    pais VARCHAR(70) NOT NULL DEFAULT 'Costa Rica'
+    --pais de origen del proveedor, lo ponemos por defecto en Costa Rica
+);
+--es logico que la tabla de proveedores se cree antes que los productos, pues ellos son quienes manejan esos productos y se debe saber eso
+
+CREATE TABLE almacenes(
+    id_almacen SERIAL PRIMARY KEY,
+    nombre_almacen VARCHAR(110) NOT NULL UNIQUE,
+    ubicacion VARCHAR(200) NOT NULL,
+    almacen_esta_activo BOOLEAN NOT NULL DEFAULT TRUE
+    --dejamos por defecto establecido que el almacen si opera
+);
+
+CREATE TABLE productos(
+    id_producto SERIAL PRIMARY KEY,
+    sku VARCHAR(30) NOT NULL UNIQUE,
+    nombre_producto VARCHAR(140) NOT NULL,
+    id_subcategoria INT NOT NULL,  
+    --sirve como fk normalizada (enlace a jerarquia normalizada)
+    id_proveedor INT NOT NULL,
+    --ayuda a conectar con proveedor principal
+    --es un codigo de negocio unico por cada unidad o tipo de producto con sus variaciones
+    costo_unitario NUMERIC(12,2) NOT NULL CHECK (costo_unitario>=0),
+    precio_venta NUMERIC(12,2) NOT NULL CHECK (precio_venta>=costo_unitario),
+    /*Hay una regla de negocio que especifica que el precio de venta no puede ser menor
+    al costo de compra unitario*/
+    CONSTRAINT fk_producto_en_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES subcategorias(id_subcategoria)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+    CONSTRAINT fk_producto_con_proveedor FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor) ON UPDATE CASCADE ON DELETE RESTRICT
+
+);
+
+
+--como producto<-->almacen es una relacion N:M, se debe hacer la tabla intermedia
+
+CREATE TABLE inventario_en_almacen(
+    id_inventario SERIAL primary KEY
+    id_producto INT NOT NULL,
+    id_almacen INT NOT NULL,
+
+    --ahora debemos cumplir con 4 propiedades ACID
+    --en este cao es para que una venta nunca permita que el inventario quede en valores negativos
+    stock_actual INT NOT NULL DEFAULT 0 CHECK(stock_actual>=0),
+    
+    --una variable por si acaso para controlar el stock_minimo que debería haber
+    stock_minimo INT NOT NULL DEFAULT 4 CHECK(stock_minimo >=0)
+    --el enunciado menciona que la meta de inventario debe ser stock_optimo - stock_actual
+    stock_optimo INT NOT NULL DEFAULT 20 CHECK (stock_optimo>=stock_minimo),
+    ultimo_cambio_en_stock TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    --para seguir como cambian datos y mantener trazabilidad
+    
+    CONSTRAINT fk_inventario_producto FOREIGN KEY (id_producto)
+    REFERENCES productos(id_producto) ON UPDATE CASCADE ON DELETE RESTRICT,
+
+    CONSTRAINT fk_inventario_almacen FOREIGN KEY(id_almacen) REFERENCES almacenes(id_almacen)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+    --ahora vamos a hacer una restriccion que diga que no pueden haber 2 filas duplicadas del mismo producto en el mismo almacen
+    CONSTRAINT criterio_unicidad_producto_y_almacen UNIQUE (id_producto,id_almacen)
+
+
+);
+
+
