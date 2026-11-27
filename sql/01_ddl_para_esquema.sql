@@ -187,4 +187,12 @@ CREATE TABLE auditoria_reportes (
     --esto se refiere a la persona que hizo el reporte
 );
 
+/*AHORA VAMOS A HACER INDICES*/
+CREATE INDEX idx_inventario_de_almacen ON inventario_en_almacen(id_almacen);
+-- asi acelera la busqueda y aplica seguridad a nivel de fila
 
+CREATE INDEX idx_mov_fecha_prod ON movimientos_en_inventario(fecha_movimiento,id_producto);
+--Asi se acelera el reporte 2
+
+CREATE INDEX idx_movimiento_almacen ON movimientos_en_inventario(id_almacen);
+--acelera auditoría por sede
