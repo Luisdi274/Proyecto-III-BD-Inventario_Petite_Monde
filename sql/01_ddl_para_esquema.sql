@@ -28,12 +28,12 @@ CREATE TABLE subcategorias(
 CREATE TABLE proveedores(
     id_proveedor SERIAL PRIMARY KEY,
     nombre_proveedor NOT NULL UNIQUE,
-    contacto_nombre VARCHAR(120) NOT NULL,
+    contacto_nombre_para_proveedor VARCHAR(120) NOT NULL,
     --es a la persona principal a la que se contacta para hablar con proveedor
-    telefono VARCHAR(35) NOT NULL,
+    telefono_proveedor VARCHAR(35) NOT NULL,
     --aqui por el contexto, vamos a imponer que es un unico telefono de contacto
     --por eso mismo no se hace otra tabla, por no ser un atributo multivaluado
-    pais VARCHAR(70) NOT NULL DEFAULT 'Costa Rica'
+    pais_proveedor VARCHAR(70) NOT NULL DEFAULT 'Costa Rica'
     --pais de origen del proveedor, lo ponemos por defecto en Costa Rica
 );
 --es logico que la tabla de proveedores se cree antes que los productos, pues ellos son quienes manejan esos productos y se debe saber eso
