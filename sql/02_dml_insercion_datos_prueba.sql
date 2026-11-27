@@ -18,7 +18,7 @@ INSERT INTO proveedores (nombre_proveedor,contacto_nombre_para_proveedor,telefon
 ('Muebles & Confort', 'Ana Gómez',   '+506 8888-2222', 'Costa Rica'),  
 ('Importadora Global','Luis Mora',   '+506 8888-3333', 'Costa Rica');
 
-INSERT INTO almacenes(nombre_almacenm,ubicacion,almacen_esta_activo) VALUES
+INSERT INTO almacenes(nombre_almacen,ubicacion,almacen_esta_activo) VALUES
 ('Almacén Central', 'Cartago, Costa Rica', TRUE),   
 ('Bodega Norte',    'San José, Costa Rica', TRUE);  
 
