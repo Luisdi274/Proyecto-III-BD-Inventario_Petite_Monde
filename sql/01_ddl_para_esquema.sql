@@ -155,3 +155,36 @@ CREATE TABLE transferencias(
     CONSTRAINT revision_almacenes_distintos CHECK (id_almacen_origen <> id_almacen_destino)
 );
 
+CREATE TABLE movimientos_en_inventario(
+    id_movimiento SERIAL PRIMARY KEY,
+    id_producto INT NOT NULL,
+    --ese va a ser el producto afectado
+    id_almacen INT NOT NULL,
+    --almacen donde ocurrió el movimiento
+    tipo_movimiento VARCHAR(30) NOT NULL CHECK(tipo_movimiento IN ('ENTRADA','SALIDA','TRANSFERENCIA_ENTRADA','TRANSFERENCIA_SALIDA')),
+    cantidad INT NOT NULL CHECK(cantidad > 0),
+    fecha_movimiento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_referencia INT,
+    usuario_responsable VARCHAR(110) NOT NULL DEFAULT CURRENT_USER,
+    observaciones VARCHAR(255),
+
+    CONSTRAINT fk_movimientos_producto FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+
+    CONSTRAINT fk_movimiento_almacen FOREIGN KEY (id_almacen) REFERENCES almacenes(id_almacen)
+    --esto se refiere a la persona que hizo el report
+
+);
+
+
+CREATE TABLE auditoria_reportes (
+    id_auditoria SERIAL PRIMARY KEY,
+    nombre_reporte VARCHAR(110) NOT NULL,
+    --nombre del SP invocado
+    parametros_usados TEXT,
+    -- parametros de categoria y fecha consultados
+    fecha_generacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_ejecutor VARCHAR(110) NOT NULL DEFAULT CURRENT_USER
+    --esto se refiere a la persona que hizo el reporte
+);
+
+
